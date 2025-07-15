@@ -1,8 +1,45 @@
 "use client"
 import { Layers } from "lucide-react";
 import Wrapper from "./components/Wrapper";
+import { useEffect, useState } from "react";
+import { createEmpyInvoice } from "./actions";
+import { useUser } from "@clerk/nextjs";
+import confetti from "canvas-confetti"
 
 export default function Home() {
+      const [invoiceName,setInvoiceName] = useState("")
+      const [isNameValide,setIsNameVAlid]= useState(true)
+      const {user} = useUser()
+      const email = user?.primaryEmailAddress?.emailAddress as string
+
+      useEffect(() =>{
+        setIsNameVAlid(invoiceName.length <= 60)
+      },[invoiceName])
+
+      const handleCreateInvoice = async () =>{
+            try {
+                  if(email){
+                        await createEmpyInvoice(email,invoiceName)
+                  }
+                  setInvoiceName("")
+                  const modal = document.getElementById('my_modal_3') as HTMLDialogElement
+                  if(modal){
+                        modal.close()
+                  }
+                  confetti({
+                        particleCount:100,
+                        spread: 70,
+                        origin: {y:0.6},
+                        zIndex:99999
+                  })
+
+                 
+                  
+                  
+            } catch (error) {
+                  console.error("Erreur lors de la création de la facture")
+            }
+      }
   return (
 <Wrapper>
       <div className="flex flex-col space-y-4">
@@ -34,8 +71,18 @@ export default function Home() {
                      id=""
                      placeholder="Nom de la facture"
                      className="input input-bordered w-full my-4"
+                     value={invoiceName}
+                     onChange={(e) => setInvoiceName(e.target.value)}
                      />
+
+                     {!isNameValide && <p className="mb-4 text-sm">le nom ne peut pas depasser 60 caractères</p>}
                   
+                     <button className="btn btn-accent"
+                     disabled={!isNameValide || invoiceName.length === 0}
+                     onClick={handleCreateInvoice}
+                     >
+                       Créer
+                     </button>
                   </div>
             </dialog> 
 </div>
