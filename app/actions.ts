@@ -1,6 +1,7 @@
 "use server"
 
 import prisma from "@/lib/prisma";
+import { randomBytes } from "crypto";
 
 
 export async function checkAndAddUser(email:string,name:string){
@@ -26,5 +27,57 @@ export async function checkAndAddUser(email:string,name:string){
         console.error(error)
     }
 }
+const generateUniqueId = async () => {
+    let uniqueId;
+    let isUnique= false;
+
+    while(!isUnique){
+        uniqueId = randomBytes(3).toString('hex')
+   
+    const existingInvoice = await prisma.invoice.findUnique({
+        where: {
+            id:uniqueId
+        }
+    })
+    if(!existingInvoice){
+        isUnique=true;
+    }
+}
+return uniqueId
+}
+export async function createEmpyInvoice(email:string,name:string){
+
+    try {
+        const user = await prisma.user.findUnique({
+            where :{
+                email:email
+            }
+        })
+
+        const invoiceID = await generateUniqueId() as string
+        if(user){
+            const newInvoice = await prisma.invoice.create({
+            
+            data: {
+                id: invoiceID,
+                name: name,
+                userId:user?.id,
+                issuerName:"",
+                issuerAddress:"",
+                clientName   :"",
+                clientAddress:"",
+                invoiceDate :"",
+                dueDate:"",
+                vatActive:false,
+                vatRate :16 ,
+            }
+        })
+        }   
+
+    } catch (error) {
+         console.error(error)
+    }
+}
+
 
  
