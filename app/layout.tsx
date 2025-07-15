@@ -24,14 +24,13 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <ClerkProvider>
+  <ClerkProvider>
     <html lang="en" data-theme="fantasy">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
+        className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         {children}
       </body>
     </html>
-    </ClerkProvider>
+  </ClerkProvider>
   );
 }
