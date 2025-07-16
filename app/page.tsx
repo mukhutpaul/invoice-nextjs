@@ -2,15 +2,34 @@
 import { Layers } from "lucide-react";
 import Wrapper from "./components/Wrapper";
 import { useEffect, useState } from "react";
-import { createEmpyInvoice } from "./actions";
+import { createEmpyInvoice, getInvoicesByEmail } from "./actions";
 import { useUser } from "@clerk/nextjs";
 import confetti from "canvas-confetti"
+import { Invoice } from "./generated/prisma";
+import InvoiceComponent from "./components/InvoiceComponent";
 
 export default function Home() {
       const [invoiceName,setInvoiceName] = useState("")
       const [isNameValide,setIsNameVAlid]= useState(true)
       const {user} = useUser()
       const email = user?.primaryEmailAddress?.emailAddress as string
+      const [invoices, setInvoices] =  useState<Invoice []>([])
+      const fetchInvoices = async() => {
+            try {
+                  const data = await getInvoicesByEmail(email)
+                  if(data){
+                        setInvoices(data)
+                  }
+                  
+                  
+            } catch (error) {
+                  console.error("Erreur lors du chargement des factures",error)
+            }
+      }
+
+       useEffect(() =>{
+        fetchInvoices()
+      },[email])
 
       useEffect(() =>{
         setIsNameVAlid(invoiceName.length <= 60)
@@ -53,9 +72,14 @@ export default function Home() {
                   <div className='bg-accent-content text-accent rounded-full p-2 mt-2'>
                    <Layers className='w-6 h-6'/> 
                  </div>
-                  
-            {/* Liste des factures */}
             </div>
+            {invoices.length > 0 && (
+                  invoices.map((invoice,index) => (
+                        <div key={index}>
+                              <InvoiceComponent invoice={invoice} index={index} />
+                        </div>
+                  ))
+            )}
           </div> 
          
 
