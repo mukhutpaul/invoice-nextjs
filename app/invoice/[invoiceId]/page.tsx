@@ -1,7 +1,11 @@
 "use client"
 import { getInvoiceById } from '@/app/actions'
+import InvoiceInfo from '@/app/components/InvoiceInfo'
+import VATControl from '@/app/components/VATControl'
 import Wrapper from '@/app/components/Wrapper'
 import { Invoice } from '@/app/generated/prisma'
+import { Trash } from 'lucide-react'
+
 import React, { useEffect, useState } from 'react'
 
 function page({params} : {params : Promise<{invoiceId:string}>}) {
@@ -25,11 +29,17 @@ function page({params} : {params : Promise<{invoiceId:string}>}) {
     fetchInvoice();
 
   },[])
+
+  if(!invoice) return (
+    <div className='flex justify-center items-center h-screen w-full'>
+      <span className='font-bold'>Facture non trouvée</span>
+    </div>
+  )
   
   return ( 
     <Wrapper>
       <div>
-      <div> 
+      <div className='flex flex-col md:flex flex-row md:justify-between md:items-center mb-4'> 
         
         <p className='badge badge-ghost badge-lg uppercase'>
           <span>Facture-</span>{invoice?.id}
@@ -43,12 +53,35 @@ function page({params} : {params : Promise<{invoiceId:string}>}) {
               <option value={4}>Annulée</option>
               <option value={5}>Impayée</option>
           </select>
-        </div>
-        <button className='btn btn-sm btn-accent ml-4'>
+          <button className='btn btn-sm btn-accent ml-4'>
            Sauvegarder
-        </button>
+         </button>
+         <button className='btn btn-sm btn-accent ml-4'>
+           <Trash className='w-4'/>
+         </button>
+        </div>
+         
       </div>
-      <div></div>
+      <div>
+
+        <div className='flex w-full md:w-1/3 flex-col'>
+            <div className='mb-4 bg-base-200 rounded-xl p-5'>
+
+               <div>
+                   <div className='badge badge-accent'>Résumé de totaux</div>
+                   <VATControl invoice={invoice} setInvoice={setIvoice} />
+
+               </div>
+            </div>
+            <InvoiceInfo invoice={invoice} setInvoice={setIvoice}/>
+
+        </div>
+
+        <div className='flex w-full md:w-2/3 flex-col'>
+
+        </div>
+      </div>
+
     </div>
     </Wrapper>
   )
