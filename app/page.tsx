@@ -51,10 +51,7 @@ export default function Home() {
                         spread: 70,
                         origin: {y:0.6},
                         zIndex:99999
-                  })
-
-                 
-                  
+                  })   
                   
             } catch (error) {
                   console.error("Erreur lors de la création de la facture")

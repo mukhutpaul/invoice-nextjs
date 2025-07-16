@@ -98,7 +98,7 @@ const calculateTotal = () => {
           </div>
           <div>
              <div className='stat-value'>
-                {calculateTotal()} $
+                {calculateTotal().toFixed(2)} $
              </div>
           </div>
           <div className='stat-desc'>
