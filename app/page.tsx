@@ -40,6 +40,7 @@ export default function Home() {
                   if(email){
                         await createEmpyInvoice(email,invoiceName)
                   }
+                  fetchInvoices()
                   setInvoiceName("")
                   const modal = document.getElementById('my_modal_3') as HTMLDialogElement
                   if(modal){
