@@ -5,8 +5,8 @@ import { useEffect, useState } from "react";
 import { createEmpyInvoice, getInvoicesByEmail } from "./actions";
 import { useUser } from "@clerk/nextjs";
 import confetti from "canvas-confetti"
-import { Invoice } from "./generated/prisma";
 import InvoiceComponent from "./components/InvoiceComponent";
+import { Invoice } from "@/type";
 
 export default function Home() {
       const [invoiceName,setInvoiceName] = useState("")

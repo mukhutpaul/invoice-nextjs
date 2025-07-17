@@ -3,7 +3,7 @@ import { InvoiceLine } from "./app/generated/prisma";
 
 
 export interface Invoice extends PrismaInvoice {
-  lines: InvoiceLine;
+  lines: InvoiceLine[];
 }
 
 export interface Totals {

@@ -1,12 +1,14 @@
 "use client"
-import { getInvoiceById, updateInvoice } from '@/app/actions'
+import { deleteInvoice, getInvoiceById, updateInvoice } from '@/app/actions'
 import InvoceLines from '@/app/components/InvoceLines'
 import InvoiceInfo from '@/app/components/InvoiceInfo'
+import InvoicePdf from '@/app/components/InvoicePdf'
 import VATControl from '@/app/components/VATControl'
 import Wrapper from '@/app/components/Wrapper'
 import { Invoice } from '@/app/generated/prisma'
 import { Totals } from '@/type'
 import { Save, Trash } from 'lucide-react'
+import { useRouter } from 'next/navigation'
 
 import React, { useEffect, useState } from 'react'
 
@@ -17,6 +19,8 @@ function page({params} : {params : Promise<{invoiceId:string}>}) {
   const [totale,setTotale] = useState<Totals | null>(null)
   const [isSaveDisabled,setIsSaveDisabled] = useState(true)
   const [isLoaling,setIsLoading] = useState(false)
+  const router =useRouter()
+
   const fetchInvoice = async () => {
     try {
       const {invoiceId} = await params
@@ -77,6 +81,20 @@ function page({params} : {params : Promise<{invoiceId:string}>}) {
     }
   }
 
+  const handleDelete = async() => {
+     const confirmed = window.confirm("Etes-vous sûr de vouloir supprimer cette facture")
+
+     if(confirmed){
+        try {
+          await deleteInvoice(invoice?.id as string)
+          router.push('/')
+          
+        } catch (error) {
+          console.error("Erreur lors de la sauvegarde de la facture",error)
+        }
+     }
+  }
+
   if(!invoice || !totale) return (
     <div className='flex justify-center items-center h-screen w-full'>
       <span className='font-bold'>Facture non trouvée</span>
@@ -122,7 +140,9 @@ function page({params} : {params : Promise<{invoiceId:string}>}) {
             )}
            
          </button>
-         <button className='btn btn-sm btn-accent ml-4'>
+         <button 
+         onClick={handleDelete}
+         className='btn btn-sm btn-accent ml-4'>
            <Trash className='w-4'/>
          </button>
         </div>
@@ -166,6 +186,9 @@ function page({params} : {params : Promise<{invoiceId:string}>}) {
         <div className='flex w-full md:w-2/3 flex-col md:ml-4'>
 
          <InvoceLines invoice={invoice} setInvoice={setIvoice}/>
+        
+        <InvoicePdf invoice={invoice} totals={totale}/>
+        
         </div>
       </div>
 
