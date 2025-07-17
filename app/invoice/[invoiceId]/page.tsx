@@ -5,6 +5,7 @@ import InvoiceInfo from '@/app/components/InvoiceInfo'
 import VATControl from '@/app/components/VATControl'
 import Wrapper from '@/app/components/Wrapper'
 import { Invoice } from '@/app/generated/prisma'
+import { Totals } from '@/type'
 import { Trash } from 'lucide-react'
 
 import React, { useEffect, useState } from 'react'
@@ -13,6 +14,7 @@ function page({params} : {params : Promise<{invoiceId:string}>}) {
   
   const [invoice,setIvoice] = useState<Invoice | null>(null)
   const [initialInvoce,seInitialInvoce] = useState<Invoice | null>(null)
+  const [totale,setTotale] = useState<Totals | null>(null)
   const fetchInvoice = async () => {
     try {
       const {invoiceId} = await params
@@ -30,12 +32,22 @@ function page({params} : {params : Promise<{invoiceId:string}>}) {
     fetchInvoice();
 
   },[])
+    useEffect(() => {
+    if (!invoice) return;
+    const ht = invoice.lines.reduce((acc, { quantity, unitPrice }) =>
+      acc + quantity * unitPrice, 0
+    )
+    const vat = invoice.vatActive ? ht * (invoice.vatRate / 100) : 0
+    setTotale({ totalHT: ht, totalVAT: vat, totalTTC: ht + vat })
 
-  if(!invoice) return (
+  }, [invoice])
+
+  if(!invoice || !totale) return (
     <div className='flex justify-center items-center h-screen w-full'>
       <span className='font-bold'>Facture non trouvée</span>
     </div>
   )
+
   
   return ( 
     <Wrapper>
@@ -72,7 +84,10 @@ function page({params} : {params : Promise<{invoiceId:string}>}) {
                <div className='flex justify-between items-center mb-4'>
                    <div className='badge badge-accent'>Résumé de totaux</div>
                    <VATControl invoice={invoice} setInvoice={setIvoice} />
-
+                 </div>
+                 <div>
+                  <span>TVA ({invoice?.vatRate})</span>
+                  <span></span>
                  </div>
             </div>
             <InvoiceInfo invoice={invoice} setInvoice={setIvoice}/>
