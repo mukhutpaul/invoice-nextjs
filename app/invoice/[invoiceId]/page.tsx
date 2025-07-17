@@ -42,13 +42,22 @@ function page({params} : {params : Promise<{invoiceId:string}>}) {
 
   }, [invoice])
 
+  const handleStatusChange = (e: React.ChangeEvent<HTMLSelectElement>) =>{
+    const newStatus = parseInt(e.target.value)
+
+    if(invoice){
+      const updatedInvoice = {...invoice,status : newStatus}
+      setIvoice(updatedInvoice)
+    }
+  }
   if(!invoice || !totale) return (
     <div className='flex justify-center items-center h-screen w-full'>
       <span className='font-bold'>Facture non trouvée</span>
     </div>
   )
 
-  
+
+
   return ( 
     <Wrapper>
       <div>
@@ -58,7 +67,9 @@ function page({params} : {params : Promise<{invoiceId:string}>}) {
           <span>Facture-</span>{invoice?.id}
         </p>
         <div className='flex md:mt-0 mt-4'>
-          <select className='select select-sm select-bordered w-full'
+          <select
+          onChange={handleStatusChange}
+           className='select select-sm select-bordered w-full'
           value={invoice?.status}>
               <option value={1}>Brouillon</option>
               <option value={2}>En attente</option>
@@ -84,10 +95,26 @@ function page({params} : {params : Promise<{invoiceId:string}>}) {
                <div className='flex justify-between items-center mb-4'>
                    <div className='badge badge-accent'>Résumé de totaux</div>
                    <VATControl invoice={invoice} setInvoice={setIvoice} />
+                </div>
+
+                <div className='flex justify-between'>
+                  <span>Total Hors Taxes</span>
+                  <span>  {totale.totalHT.toFixed(2)} $</span>
+                 
                  </div>
-                 <div>
-                  <span>TVA ({invoice?.vatRate})</span>
-                  <span></span>
+
+
+                 <div className='flex justify-between'>
+                  <span>TVA {invoice?.vatActive ? `${invoice?.vatRate}` : '0'}</span>
+                  <span>  {totale.totalVAT.toFixed(2)} $</span>
+ 
+                 </div>
+
+                 
+                <div className='flex justify-between font-bold'>
+                  <span>Total TTC</span>
+                  <span>  {totale.totalTTC.toFixed(2)} $</span>
+                 
                  </div>
             </div>
             <InvoiceInfo invoice={invoice} setInvoice={setIvoice}/>
