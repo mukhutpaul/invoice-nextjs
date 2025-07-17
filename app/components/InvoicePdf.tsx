@@ -75,7 +75,10 @@ const InvoicePdf: React.FC<FacturePDFProps> = ({invoice,totals}) => {
                             <p className='text-sm font-bold italic'>{invoice.clientName}</p>
                             <p className='text-sm text-gray-500 w-52 break-words'>{invoice.clientAddress}</p>
                         </div>
+                </div>
+                </div>
 
+                
                         <div className='overflow-x-auto'>
                             <table className='table table-zebra'>
                                  <thead>
@@ -89,16 +92,18 @@ const InvoicePdf: React.FC<FacturePDFProps> = ({invoice,totals}) => {
                                 </thead>
                                 <tbody>
                                     {invoice.lines.map((line,index) =>(
-                                        <tr>
+                                        <tr key={index+1}>
                                             <td>{index+1}</td>
+                                            <td>{line.description}</td>
+                                             <td>{line.quantity}</td>
+                                            <td>{line.unitPrice.toFixed(2)} $</td>
+                                             <td>{line.quantity * line.unitPrice}.toFixed(2)</td>
                                         </tr>
-                                    ))}
+                                    ))} 
                                 </tbody>
                             </table>
 
                         </div>
-                </div>
-                </div>
 
             </div>
         </div>
