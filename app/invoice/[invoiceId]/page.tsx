@@ -1,12 +1,12 @@
 "use client"
-import { getInvoiceById } from '@/app/actions'
+import { getInvoiceById, updateInvoice } from '@/app/actions'
 import InvoceLines from '@/app/components/InvoceLines'
 import InvoiceInfo from '@/app/components/InvoiceInfo'
 import VATControl from '@/app/components/VATControl'
 import Wrapper from '@/app/components/Wrapper'
 import { Invoice } from '@/app/generated/prisma'
 import { Totals } from '@/type'
-import { Trash } from 'lucide-react'
+import { Save, Trash } from 'lucide-react'
 
 import React, { useEffect, useState } from 'react'
 
@@ -15,6 +15,8 @@ function page({params} : {params : Promise<{invoiceId:string}>}) {
   const [invoice,setIvoice] = useState<Invoice | null>(null)
   const [initialInvoce,seInitialInvoce] = useState<Invoice | null>(null)
   const [totale,setTotale] = useState<Totals | null>(null)
+  const [isSaveDisabled,setIsSaveDisabled] = useState(true)
+  const [isLoaling,setIsLoading] = useState(false)
   const fetchInvoice = async () => {
     try {
       const {invoiceId} = await params
@@ -50,6 +52,31 @@ function page({params} : {params : Promise<{invoiceId:string}>}) {
       setIvoice(updatedInvoice)
     }
   }
+
+  useEffect(() =>{
+    setIsSaveDisabled(
+      JSON.stringify(invoice) === JSON.stringify(initialInvoce))
+
+  },[invoice,initialInvoce])
+
+  const handleSave = async () => {
+    if(!invoice) return;
+    setIsLoading(true)
+
+    try {
+      await updateInvoice(invoice)
+      const updatedInvoice = await getInvoiceById(invoice.id)
+      if(updatedInvoice){
+        setIvoice(updatedInvoice)
+        seInitialInvoce(updatedInvoice)
+      }
+      setIsLoading(false)
+      
+    } catch (error) {
+      console.log("Error lors de la sauvegarde de la facture",error)
+    }
+  }
+
   if(!invoice || !totale) return (
     <div className='flex justify-center items-center h-screen w-full'>
       <span className='font-bold'>Facture non trouvée</span>
@@ -77,8 +104,23 @@ function page({params} : {params : Promise<{invoiceId:string}>}) {
               <option value={4}>Annulée</option>
               <option value={5}>Impayée</option>
           </select>
-          <button className='btn btn-sm btn-accent ml-4'>
-           Sauvegarder
+          <button 
+          onClick={handleSave}
+          disabled={isSaveDisabled || isLoaling}
+          className='btn btn-sm btn-accent ml-4'>
+            {isLoaling ? (
+              <span className='loading loading-spinner lading-sm'></span>
+
+            ):(
+             
+                 <>
+                Sauvegarder
+                <Save className='w-4 ml-2' />
+
+              </>
+
+            )}
+           
          </button>
          <button className='btn btn-sm btn-accent ml-4'>
            <Trash className='w-4'/>
