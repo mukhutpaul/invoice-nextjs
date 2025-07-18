@@ -1,6 +1,10 @@
 import { Invoice, Totals } from '@/type'
+import confetti from 'canvas-confetti';
+import html2canvas from 'html2canvas-pro';
+import jsPDF from 'jspdf';
 import { ArrowDownFromLine, Layers } from 'lucide-react'
-import React from 'react'
+import React, { useRef } from 'react'
+
 
 interface FacturePDFProps {
     invoice: Invoice,
@@ -15,17 +19,57 @@ function formatDate(dateString: string): string {
 
 
 const InvoicePdf: React.FC<FacturePDFProps> = ({invoice,totals}) => {
+
+    const factureRef = useRef<HTMLDivElement>(null)
+
+    const handleDownloadPdf = async () => {
+        const element = factureRef.current
+
+        if(element){
+            try {
+                const canvas = await html2canvas(element,{scale:3,useCORS:true})
+                const  imgData = canvas.toDataURL('image/png')
+
+                const pdf = new jsPDF({
+                    orientation : "portrait",
+                    unit:"mm",
+                    format:"A4"
+            })
+
+            const pdfWidth = pdf.internal.pageSize.getWidth()
+            const pdfHeight = (canvas.height * pdfWidth) / canvas.width
+
+            pdf.addImage(imgData, 'PNG',0,0,pdfWidth,pdfHeight)
+            pdf.save(`facture-${invoice.name}.pdf`)
+
+             confetti({
+                    particleCount:100,
+                    spread: 70,
+                    origin: {y:0.6},
+                    zIndex:99999
+                }) 
+
+            } catch (error) {
+                console.error(`Erreur lors de la génération du PDF:`,error)
+                
+            }
+        }
+
+    }
+
   return (
     <div className='mt-4 hidden lg:block'>
         <div className='border-base-300 border-2 border-dashed 
         rounded-xl p-5'>
-            <button className='btn btn-accent  mb-4 btn btn-sm' >
+            <button 
+            onClick={handleDownloadPdf}
+            className='btn btn-accent  mb-4 btn btn-sm' >
                 Facture PDF 
                 <ArrowDownFromLine 
                 className='w-4'/>
             </button>
 
-            <div className='p-8'>
+            <div className='p-8' ref={factureRef}>
                 <div className='flex justify-between items-center text-sm'>
                     <div className='flex flex-col'>
                         <div>
@@ -78,8 +122,7 @@ const InvoicePdf: React.FC<FacturePDFProps> = ({invoice,totals}) => {
                 </div>
                 </div>
 
-                
-                        <div className='overflow-x-auto'>
+                    <div className='overflow-x-auto'>
                             <table className='table table-zebra'>
                                  <thead>
                                   <tr>
@@ -97,19 +140,55 @@ const InvoicePdf: React.FC<FacturePDFProps> = ({invoice,totals}) => {
                                             <td>{line.description}</td>
                                              <td>{line.quantity}</td>
                                             <td>{line.unitPrice.toFixed(2)} $</td>
-                                             <td>{line.quantity * line.unitPrice}.toFixed(2)</td>
+                                            <td>{(line.quantity * line.unitPrice).toFixed(2)}</td>
                                         </tr>
                                     ))} 
                                 </tbody>
                             </table>
 
-                        </div>
+                    </div>
+
+                    <div className='mt-6 space-y-2 text-md'>
+                        <div className='flex justify-between'>
+                            <div className='font-bold'>
+                                Total Hors Taxe
+
+                            </div>
+                            <div>
+                                {totals.totalHT.toFixed(2)} $
+                            </div>
+                    </div>
+
+                    {invoice.vatActive && (
+                        <div className='flex justify-between'>
+                            <div className='font-bold'>
+                                TVA {invoice.vatRate} %
+
+                            </div>
+                            <div>
+                                 {totals.totalVAT.toFixed(2)} $
+                            </div>
+                    </div>
+                    )}
+
+                    <div className='mt-6 space-y-2 text-md'>
+                        <div className='flex justify-between'>
+                            <div className='font-bold'>
+                                Total Toutes taxes comprises
+
+                            </div>
+                            <div className='badge badge-accent'>
+                                {totals.totalTTC.toFixed(2)} $
+                            </div>
+                    </div>
+
+                    </div>
 
             </div>
         </div>
 
 
-    </div>
+    </div>  </div>
   )
 }
 
